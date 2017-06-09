@@ -36,8 +36,8 @@ def create_fluxes(df, id_key, time_key, fl_key):
     flux.index.name = 'date'
     return flux.rename(columns = {0:fl_key, id_key:'id'}).reset_index()
 
-def merge_fluxes(df1, df2):
     return pd.merge(df1, df2, how='outer',
+def merge_fluxes(df1, df2):
                     on = ['date', 'id']).fillna(0)
 
 # create fluxes from normal trips
@@ -77,3 +77,5 @@ rmerged = rmerged.drop(['rflux_in', 'rflux_out'], axis=1)
 # -------------- OTHER FEATURES -------------------------------------
 
 features = merge_fluxes(merged, rmerged)
+out_filename = 'features_data/{}{:02}-features-data.csv'.format(year,month)
+features.to_csv(out_filename)
