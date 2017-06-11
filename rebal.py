@@ -6,6 +6,8 @@ Created on Tue Jun  6 13:02:10 2017
 @author: psamtik071
 """
 
+# create rebalancing datasets from trips datasets and save to rebaltrips\
+
 from workflow.data import *
 import os
 
@@ -13,7 +15,7 @@ month = 3
 year = 2017
 #trips = trip_data(year, month)
 #columns to shift by
-shift_cols = ['stop_id','stop_time', 'stop_long', 'stop_lat', 'stop_name']
+#shift_cols = ['stop_id','stop_time', 'stop_long', 'stop_lat', 'stop_name']
 
 '''
 these functions are moved to workflow/data.py
@@ -33,17 +35,17 @@ def rebal_from_trips(trips):
 # track rebalancing events
 #(REMEMBER THAT REBAL EVENTS USE STOP_TIME AS THE STARTING TIME)
 
-to_folder = 'rebaltrips/'
+to_folder = 'rebals/'
 
 #rebal_from_trips(trip_data(year, month)).to_csv(to_folder + to_filename,
  #               index = None)
 
-for year in xrange(2015,2017):
-    for month in xrange(1,13):
+for year in xrange(2017,2018):
+    for month in xrange(1,3):
 
         to_filename = '{}{:02}-rebal-data.csv'.format(year, month)
         path = to_folder + to_filename
-        print "extracting rebalancing trips from {}".format(path)
+        print "extracting rebalancing trips to {}".format(path)
 
         if os.path.exists(path):
             print "{} already exists".format(path)

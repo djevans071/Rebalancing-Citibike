@@ -7,13 +7,20 @@ CREATE TABLE stations (
 );
 
 CREATE TABLE features (
-	key SERIAL PRIMARY KEY , 
-	date TIMESTAMP WITHOUT TIME ZONE NOT NULL, 
+	key serial PRIMARY KEY,
 	id FLOAT NOT NULL, 
+	date DATE NOT NULL, 
+	hour INTEGER NOT NULL, 
 	bikes_out FLOAT NOT NULL, 
 	bikes_in FLOAT NOT NULL, 
-	weekday FLOAT NOT NULL, 
-	hour FLOAT NOT NULL
+	dayofweek FLOAT NOT NULL, 
+	month FLOAT NOT NULL, 
+	year FLOAT NOT NULL, 
+	is_weekday VARCHAR(5) NOT NULL, 
+	is_holiday VARCHAR(5) NOT NULL, 
+	rebal_net_flux FLOAT NOT NULL, 
+	tot_docks FLOAT NOT NULL, 
+	avail_bikes FLOAT NOT NULL, 
+	avail_docks FLOAT NOT NULL
 );
-
 
