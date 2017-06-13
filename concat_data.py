@@ -90,7 +90,7 @@ def initial_features(trips, rebals):
 
     rmerged = merge_fluxes(rflux_out, rflux_in)
     rmerged['rebal_net_flux'] = rmerged.rbikes_in - rmerged.rbikes_out
-    rmerged = rmerged.drop(['rbikes_in', 'rbikes_out'], axis=1)
+    #rmerged = rmerged.drop(['rbikes_in', 'rbikes_out'], axis=1)
 
 
     features = merge_fluxes(merged, rmerged)
