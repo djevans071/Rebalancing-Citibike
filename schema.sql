@@ -27,3 +27,12 @@ CREATE TABLE features (
 	CONSTRAINT features_pkey PRIMARY KEY (row_id)
 );
 
+CREATE TABLE weather (
+	index int NOT NULL PRIMARY KEY,
+	date DATE NOT NULL,
+	hour INTEGER NOT NULL,
+	precip FLOAT NOT NULL,
+	snow INTEGER NOT NULL,
+	temp FLOAT NOT NULL
+);
+
