@@ -120,10 +120,13 @@ def station_data(year, month):
     df = df[df.tot_docks > 0]
     df = df.rename(columns = {'dock_id': 'id'})
 
-    # modify columns
+    # parse and modify time columns
     formatting = '%y-%m-%d'
     df['date'] = pd.to_datetime(df.date,format = formatting)
-    df.hour = np.where(df.pm == 0, df.hour - 1, df.hour+11)
+    df.loc[(df.hour == 12) & (df.pm == 0), 'hour'] = 0
+    df.loc[(df.hour == 12) & (df.pm == 1), 'hour'] = 0
+    df.hour = np.where(df.pm == 0, df.hour, df.hour+12)
+
 
     # aggregate by hour
     aggregator = {'avail_bikes':'mean',

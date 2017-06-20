@@ -26,26 +26,25 @@ def index():
 
 @app.route('/')
 @app.route('/input')
-def cesareans_input():
+def input():
     return render_template('input.html')
 
 @app.route('/output')
-def cesareans_output():
-    # pull 'birth_month' from input field and store it
-    # patient = request.args.get('birth_month')
+def output():
+    # pull 'station' from input field and store it
     station_number = request.args.get('station')
     print station_number
-    #just select the Cesareans  from the birth dtabase for the month that the user inputs
+    #just select the bike_out  from the citibike dtabase for the station that the user unputs
     query = """
-            SELECT hour, sum(bikes_out) as bikes_out
+            SELECT hour, avg(bikes_out) as bikes_out
             FROM features
             WHERE id = {}
             GROUP BY hour
             ORDER BY hour;
             """.format(station_number)
-    print query
     results=pd.read_sql_query(query,con)
-    print results
+
+    # render table in output html
     rows = []
     for i in range(0,results.shape[0]):
         rows.append(dict(
@@ -75,7 +74,7 @@ def bikes_page():
     # return births
 
 @app.route('/db_fancy')
-def cesarean_page_fancy():
+def bikes_page_fancy():
     query = '''
             SELECT hour, sum(bikes_out) as bikes_out
             FROM features
