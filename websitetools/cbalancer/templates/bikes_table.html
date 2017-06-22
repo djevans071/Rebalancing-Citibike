@@ -9,7 +9,7 @@
     <meta name="author" content="">
     <link rel="icon" href="../../favicon.ico">
 
-    <title>Station Input</title>
+    <title>BikeFlow</title>
 
     <!-- Bootstrap core CSS -->
     <link href="../static/css/bootstrap.min.css" rel="stylesheet">
@@ -56,32 +56,24 @@
 
 <br><br>
 
-<div class="container">
+    <div class="container">
 
-    <div class="starter-template">
-        <h2>Station Input</h2>
-        <p>Enter a station number (e.g. 72)</p>
-    </div>
+      <div class="starter-template">
+        <h1>Bikeshare Features SQL Table Results</h1>
+        <p class="lead">Barebones SQL table output from the postgreSQL table called 'features'<br> Next, get an input.</p>
+      </div>
 
-    <div class = "container">
+<table class='table table-hover'>
+  <tr><th>hour</th><th>bikes_out</th></tr>
+  {% for bike in bikes %}
+  <tr><td>{{ bike['hour'] }}</td><td>{{ bike['bikes_out']}}</td></tr>
+  {% endfor %}
+</table>
 
-      <form  action="/output" method="GET">
-        <div class="form-group">
-          <label for="birth_month">Station ID:</label>
-          <input type="text" id="station_id" name='station' placeholder="e.g. ">
-        </div>
+<script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="static/js/bootstrap.min.js"></script>
 
-        <div>
-          <button type="submit" class="btn btn-default btn-lg">Find Station</button>
-        </div>
-
-      </form>
-    </div>
-
-    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
-    <script src="static/js/bootstrap.min.js"></script>
-
-  </div> <!-- /.container-->
+    </div><!-- /.container -->
 
 
     <!-- Bootstrap core JavaScript

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+
+{% extends "base.html" %}
+{% block title %}BikeFlow | Station Input{% endblock %}
+{% block body %}
+
+<div class="container">
+<div class="starter-template">
+  <h2>Station Input</h2>
+  <p>Select a station</p>
+</div>
+
+<form class="form-inline" method="POST" action="{{ url_for('output') }}">
+  <div class="form-group">
+    <div class="input-group">
+      <span class="input-group-addon">Please select station</span>
+      <select type='text' name="station-select" class="selectpicker form-control">
+                {% for _, x in station_df.iterrows() %}
+                <option value="{{ x.id }}">{{ x['neighborhood'] }} | {{ x['name'] }}</option>
+                {% endfor %}
+              </select>
+    </div>
+    <button type="submit" class="btn btn-default">Go</button>
+  </div>
+</form>
+</div>
+
+
+  <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+  <script src="static/js/bootstrap.min.js"></script>
+
+</div>
+<!-- /.container-->
+
+{% endblock %}

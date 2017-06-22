@@ -1,5 +1,5 @@
 from flask import render_template, request
-from websitetools import app
+from cbalancer import app
 
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database
@@ -17,26 +17,51 @@ con = None
 
 con = psycopg2.connect(database = dbname, user = username, host = host)
 
+
+def get_stations():
+    bor_neigh_cols = ['borough', 'neighborhood']
+    df = pd.read_pickle('stations.pickle')
+    df = df.sort_values(bor_neigh_cols + ['name'])
+    return df
+
+# --------------- HOME PAGE ---------------------
+
 @app.route('/index')
+@app.route('/index.html')
 def index():
     user = {'nickname': 'Dan'}
+
     return render_template("index.html",
-        title = 'Home',
-        user = user, num = 5)
+        # neighborhood_list = hood_list,
+        station_list = name_list)
+
+# ------------- INPUT PAGE -------------------
 
 @app.route('/')
 @app.route('/input')
 def input():
-    return render_template('input.html')
 
-@app.route('/output')
+    # drop down menu for station selections
+    stations_info = get_stations()
+
+    return render_template('input.html',
+        station_df = stations_info)
+
+# ---------------- OUTPUT PAGE --------------------------
+
+@app.route('/output', methods = ['GET', 'POST'])
 def output():
     # pull 'station' from input field and store it
-    station_number = request.args.get('station')
+    station_number = request.form.get('station-select')
     print station_number
-    #just select the bike_out  from the citibike dtabase for the station that the user unputs
+    #just select the bike_out from the citibike database for the station that the user unputs
+
+    stations_info = get_stations()
+    # print stations_info.head()
+
     query = """
-            SELECT hour, avg(bikes_out) as bikes_out
+            SELECT hour, avg(bikes_out) as bikes_out,
+                avg(bikes_in) as bikes_in
             FROM features
             WHERE id = {}
             GROUP BY hour
@@ -45,18 +70,30 @@ def output():
     results=pd.read_sql_query(query,con)
 
     # render table in output html
-    rows = []
-    for i in range(0,results.shape[0]):
-        rows.append(dict(
-        hour=results.iloc[i]['hour'],
-        bikes_out=results.iloc[i]['bikes_out']))
+    # rows = []
+    # for i in range(0,results.shape[0]):
+    #     rows.append(dict(
+    #         hour=results.iloc[i]['hour'].round(1),
+    #         bikes_out=results.iloc[i]['bikes_out'].round(3),
+    #         bikes_in = results.iloc[i]['bikes_in'].round(3)))
         #the_result = ModelIt(patient,births)
-    return render_template("output.html", rows = rows)#, the_result = the_result)
+    return render_template("output.html",
+        stations_df = stations_info,
+        hourly_table = results)#, the_result = the_result)
+
+
+
+
+
+
+
+# ---------- sample db pages -------------------
 
 @app.route('/db')
 def bikes_page():
     query = '''
-            SELECT hour, sum(bikes_out) as bikes_out
+            SELECT hour, sum(bikes_out) as bikes_out,
+                        sum(bikes_in) as bikes_in
             FROM features
             WHERE id = 72
             GROUP BY hour
@@ -65,7 +102,7 @@ def bikes_page():
     results = pd.read_sql_query(query, con)
     rows = ''
     for i in range(24):
-        rows += '{} | {}'.format(results.iloc[i,0], results.iloc[i,1])
+        rows += '{} | {} | {}'.format(results.hour[i], results.bikes_out[i], results.bikes_in[i])
         rows += '<br>'
     return rows
     # for i in range(10):
