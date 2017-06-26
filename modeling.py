@@ -31,15 +31,15 @@ con = psycopg2.connect(database = dbname, user = username, host = host)
 
 print "Querying Database..."
 #get stations for 2015 to work on
-query_stations2015 = """
-    SELECT DISTINCT a.id
-    FROM features a
-    LEFT JOIN stations b ON a.id = b.id
-    WHERE a.date = '2015-03-01' AND tot_docks > 0
-    ORDER BY a.id;
-"""
+# query_stations2015 = """
+#     SELECT DISTINCT a.id
+#     FROM features a
+#     LEFT JOIN stations b ON a.id = b.id
+#     WHERE a.date = '2015-03-01' AND tot_docks > 0
+#     ORDER BY a.id;
+# """
 
-stations_2015 = pd.read_sql_query(query_stations2015, con)
+stations_2015 = pd.read_pickle('websitetools/stations.pickle')
 
 def cleanup(year):
     # clean-up dataset further and introduce new features from new_features module
@@ -50,7 +50,8 @@ def cleanup(year):
     return df
 
 index_col = ['date']
-data_cols = ['id', 'long', 'lat', 'hour', 'month', 'is_weekday', 'is_holiday',
+data_cols = ['id', 'long', 'lat', 'hour', 'dayofweek',
+             'month', 'is_weekday', 'is_holiday',
              'precip', 'temp', 'pct_avail_bikes', 'pct_avail_docks']
 
 df2015 = cleanup(2015)
@@ -69,13 +70,13 @@ from sklearn.ensemble import RandomForestRegressor
 target_label = 'pct_flux'
 
 X_train = df2015[data_cols]
-y_train = df2015[target_label].apply(flux_conditions)
+y_train = df2015[target_label]
 
 X_test = df2016[data_cols]
-y_test = df2016[target_label].apply(flux_conditions)
+y_test = df2016[target_label]
 
-reg = RandomForestRegressor(min_samples_leaf=12, min_samples_split=8,
-                            max_features = 0.85, n_jobs=-1)
+reg = RandomForestRegressor(min_samples_leaf=16, min_samples_split=6,
+                            max_features = 0.95, n_jobs=-1)
 reg.fit(X_train, y_train)
 pred = reg.predict(X_test)
 

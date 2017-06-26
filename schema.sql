@@ -5,6 +5,7 @@ CREATE TABLE stations (
 	long FLOAT NOT NULL, 
 	name VARCHAR(45) NOT NULL
 );
+alter table stations owner to psam071;
 
 CREATE TABLE features (
 	id FLOAT NOT NULL, 
@@ -26,6 +27,7 @@ CREATE TABLE features (
 	row_id serial NOT NULL,
 	CONSTRAINT features_pkey PRIMARY KEY (row_id)
 );
+alter table features owner to psam071;
 
 CREATE TABLE weather (
 	index int NOT NULL PRIMARY KEY,
@@ -35,4 +37,9 @@ CREATE TABLE weather (
 	snow INTEGER NOT NULL,
 	temp FLOAT NOT NULL
 );
+alter table weather owner to psam071;
+
+SELECT a.id, a.date, a.hour, a.bikes_out, a.bikes_in, dayofweek, month, is_weekday, is_holiday, tot_docks, avail_bikes, avail_docks
+INTO features_subset FROM features a
+RIGHT JOIN unbal_stations b ON a.id = b.id;
 

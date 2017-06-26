@@ -1,12 +1,24 @@
 from flask import render_template, request
 from cbalancer import app
 
+from datetime import datetime
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database
-import pandas as pd
 import psycopg2
+import pandas as pd
 
-from a_model import ModelIt
+from model import *
+
+from bokeh.plotting import figure
+from bokeh.resources import CDN
+from bokeh.embed import file_html
+from bokeh.models import FuncTickFormatter, HoverTool
+
+import folium
+from bs4 import BeautifulSoup
+from urllib2 import Request, urlopen
+import json
+from pandas.io.json import json_normalize
 
 username = 'psam071'
 host = 'localhost'
@@ -17,12 +29,62 @@ con = None
 
 con = psycopg2.connect(database = dbname, user = username, host = host)
 
+# SQL query to get all bike info for 2016
+def fetch_query(number):
+    query = """
+        SELECT a.id, a.date, a.hour, bikes_out, bikes_in, dayofweek, month, is_weekday, is_holiday, tot_docks, avail_bikes, avail_docks, precip, temp
+        FROM features_subset a
+        LEFT JOIN weather b ON a.date = b.date AND a.hour = b.hour
+        LEFT JOIN stations c ON a.id = c.id
+        WHERE a.id = {}
+            AND tot_docks > 0
+            --AND a.date > '2016-03-01'
+        --WHERE tot_docks > 0
+        ORDER BY a.id, a.date, a.hour;
+            """.format(number)
 
+    df=pd.read_sql_query(query,con)
+    return df
+
+# get 2015 stations from static pickle file
 def get_stations():
     bor_neigh_cols = ['borough', 'neighborhood']
     df = pd.read_pickle('stations.pickle')
     df = df.sort_values(bor_neigh_cols + ['name'])
     return df
+
+# reformat columns of the dataframe from fetch_query (e.g. flux)
+def new_features(df):
+    df['hour'] = df['hour'].astype(int)
+
+    # turn strings 'True' and 'False' into 1 and 0
+    string_dict = {'True': 1, 'False':0}
+    df[['is_weekday', 'is_holiday']] = df[['is_weekday', 'is_holiday']].replace(string_dict)
+
+    # fix the number of total docks for a given day
+    total_docks = df.groupby(['date']).max().tot_docks.reset_index()
+    df = pd.merge(df, total_docks, how = 'left', on = 'date').rename(columns = {'tot_docks_y': 'tot_docks'})
+    df.drop('tot_docks_x', 1, inplace=True)
+
+    # engineer new features
+    df['flux'] = df.bikes_in - df.bikes_out
+    df['pct_avail_bikes'] = df.avail_bikes / df.tot_docks
+    df['pct_avail_docks'] = df.avail_docks / df.tot_docks
+    df['pct_flux'] = df.flux / df.tot_docks
+
+    #normalize precipitation
+    df['precip'] = df.precip / df.precip.max()
+    return df
+
+# get hourly profile dataframe for any bike for any day
+def flux_by_hour(df, cols, dock_id, day = 0, weekday = None):
+    if weekday == 1 or weekday == 0:
+        grps = df.groupby(['id','is_weekday', 'hour']).mean().reset_index()
+        cond = (grps.is_weekday == weekday)
+    else:
+        grps = df.groupby(['id','dayofweek', 'hour']).mean().reset_index()
+        cond = (grps.dayofweek == day)
+    return grps[cond][cols]
 
 # --------------- HOME PAGE ---------------------
 
@@ -33,12 +95,12 @@ def index():
 
     return render_template("index.html",
         # neighborhood_list = hood_list,
-        station_list = name_list)
+        name = user)
 
 # ------------- INPUT PAGE -------------------
 
 @app.route('/')
-@app.route('/input')
+@app.route('/input', methods = ['GET', 'POST'])
 def input():
 
     # drop down menu for station selections
@@ -49,81 +111,110 @@ def input():
 
 # ---------------- OUTPUT PAGE --------------------------
 
+def get_live_temp():
+    # scrape live weather data site to get current temperature
+    url = 'http://w1.weather.gov/data/obhistory/KNYC.html'
+    page = urlopen(url).read()
+    soup = BeautifulSoup(page, 'lxml')
+
+    live_temp = 0
+    for tr in soup.find_all('tr')[7:8]:
+        tds = tr.find_all('td')
+        live_temp += float(tds[6].text)
+    return live_temp
+
+def get_live_station_data(dock_id):
+    # returns live station data from citibike json feed
+    url = 'https://feeds.citibikenyc.com/stations/stations.json'
+    df = pd.read_json(url)
+    request = Request(url)
+    response = urlopen(request)
+    elevations = response.read()
+    data = json.loads(elevations)
+    df = json_normalize(data['stationBeanList'])
+
+    features = ['id', 'lastCommunicationTime', 'totalDocks',
+                'latitude', 'longitude', 'stationName', 'availableBikes', 'availableDocks', 'statusKey', 'statusValue']
+    return df[df.id == dock_id][features]
+
+def ticker():
+    labels = {0:'12 AM', 5:'5 AM', 10:'10 AM', 15:'3 PM', 20:'8 PM'}
+    return labels[tick]
+
+def plotter(df, station_name):
+    # plot fluxes
+    p1 = figure(plot_width=650, plot_height=400, x_axis_type='datetime')
+    p1.title.text = "Hourly Flows for Station"
+    p1.line(df['hour'], df['pct_flux'], line_width=4)
+    # p1.line(df['hour'], df['pct_avail_bikes'], line_width = 3, color = 'firebrick')
+    # p1.patch([1, 2, 3, 4, 5], [.6, .7, .8, .7, .3], alpha=0.5, line_width=2)
+    p1.ray(x=0, y=0.2, length=24, angle=0, color='black', line_dash = 'dashed')
+    p1.ray(x=0, y=-0.2, length=24, angle=0, color='black', line_dash = 'dashed')
+    p1.xaxis.axis_label = "Time of Day"
+    p1.yaxis.axis_label = "Bikes In per Hour"
+    p1.title.text_font_size = "15pt"
+    p1.xaxis.axis_label_text_font_size = "15pt"
+    p1.yaxis.axis_label_text_font_size = "15pt"
+    p1.xaxis.major_label_text_font_size = "12pt"
+    p1.yaxis.major_label_text_font_size = "12pt"
+    # p1.yaxis.tick_label_text_font_size = "12pt"
+
+    # relabel x-ticks (check ticker function)
+    p1.xaxis.formatter = FuncTickFormatter.from_py_func(ticker)
+    flux_plot = file_html(p1, CDN, "hourly fluxes")
+    return flux_plot
+
+
 @app.route('/output', methods = ['GET', 'POST'])
 def output():
     # pull 'station' from input field and store it
     station_number = request.form.get('station-select')
-    print station_number
-    #just select the bike_out from the citibike database for the station that the user unputs
+    station_number = float(station_number)
+    # print station_number
 
+    #just select the bike_out from the citibike database for the station that the user inputs
     stations_info = get_stations()
-    # print stations_info.head()
+    station_name = stations_info[stations_info.id == station_number][['name', 'neighborhood', 'borough']].iloc[0]
+    station_loc = list(stations_info[stations_info.id == station_number][['name', 'lat', 'long']].iloc[0])
+    # print station_name
 
-    query = """
-            SELECT hour, avg(bikes_out) as bikes_out,
-                avg(bikes_in) as bikes_in
-            FROM features
-            WHERE id = {}
-            GROUP BY hour
-            ORDER BY hour;
-            """.format(station_number)
-    results=pd.read_sql_query(query,con)
+    # make station map
+    tileset = r'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
 
-    # render table in output html
-    # rows = []
-    # for i in range(0,results.shape[0]):
-    #     rows.append(dict(
-    #         hour=results.iloc[i]['hour'].round(1),
-    #         bikes_out=results.iloc[i]['bikes_out'].round(3),
-    #         bikes_in = results.iloc[i]['bikes_in'].round(3)))
-        #the_result = ModelIt(patient,births)
+    station_map = folium.Map(location = station_loc[1:],
+        width = 500, height = 350,
+        tiles = tileset,
+        attr = '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+        zoom_start = 15)
+
+    folium.Marker(location = station_loc[1:], icon=folium.Icon(color='red'),
+                   popup = station_loc[0]).add_to(station_map)
+    station_map.save('cbalancer/templates/station_map.html')
+
+    # get live temperature data
+    temp = get_live_temp()
+
+    # get live station data
+    now_station = get_live_station_data(station_number)
+    # if now_station.statusKey == 3:
+    print temp
+    print now_station
+
+
+
+
+    # get data for
+    df = fetch_query(station_number)
+    df = new_features(df)
+    df = flux_by_hour(df, ['pct_flux','hour'], stations_info, day = 1)
+
+    # make flux plot
+    flux_plot = plotter(df, station_name)
+
     return render_template("output.html",
-        stations_df = stations_info,
-        hourly_table = results)#, the_result = the_result)
+        now_temp = temp,
 
-
-
-
-
-
-
-# ---------- sample db pages -------------------
-
-@app.route('/db')
-def bikes_page():
-    query = '''
-            SELECT hour, sum(bikes_out) as bikes_out,
-                        sum(bikes_in) as bikes_in
-            FROM features
-            WHERE id = 72
-            GROUP BY hour
-            ORDER BY hour;
-        '''
-    results = pd.read_sql_query(query, con)
-    rows = ''
-    for i in range(24):
-        rows += '{} | {} | {}'.format(results.hour[i], results.bikes_out[i], results.bikes_in[i])
-        rows += '<br>'
-    return rows
-    # for i in range(10):
-    #     births += results.iloc[i]['birth_month']
-    #     births += '<br>'
-    # return births
-
-@app.route('/db_fancy')
-def bikes_page_fancy():
-    query = '''
-            SELECT hour, sum(bikes_out) as bikes_out
-            FROM features
-            WHERE id = 72
-            GROUP BY hour
-            ORDER BY hour;
-        '''
-
-    results = pd.read_sql_query(query,con)
-    bikes = []
-    for i in xrange(0, results.shape[0]):
-        bikes.append(dict(hour = results.iloc[i]['hour'],
-        bikes_out = results.iloc[i]['bikes_out']))
-
-    return render_template('bikes_table.html', bikes = bikes)
+        st_info = station_name,
+        station_df = stations_info,
+        hourly_table = df,
+        plot = flux_plot)#, the_result = the_result)

@@ -87,7 +87,7 @@ def make_lagged_fluxes(df):
     return reduce(merge_by_date, dfs)
 
 def new_features(df):
-    df['date'] = pd.to_datetime(df.date)
+    # df['date'] = pd.to_datetime(df.date)
     df['hour'] = df['hour'].astype(int)
 
     # turn strings 'True' and 'False' into 1 and 0
@@ -101,8 +101,8 @@ def new_features(df):
 
     # engineer new features
     df['flux'] = df.bikes_in - df.bikes_out
-    df['pct_bikes_in'] = df.bikes_in / df.tot_docks
-    df['pct_bikes_out'] = df.bikes_out / df.tot_docks
+    # df['pct_bikes_in'] = df.bikes_in / df.tot_docks
+    # df['pct_bikes_out'] = df.bikes_out / df.tot_docks
     df['pct_avail_bikes'] = df.avail_bikes / df.tot_docks
     df['pct_avail_docks'] = df.avail_docks / df.tot_docks
     df['pct_flux'] = df.flux / df.tot_docks
@@ -111,10 +111,11 @@ def new_features(df):
 
     #normalize precipitation
     df['precip'] = df.precip / df.precip.max()
+    df = df.fillna(method = 'bfill', axis = 0)
 
 
     # get lagged features
-    df_with_lags = make_lagged_fluxes(df).dropna()
+    # df_with_lags = make_lagged_fluxes(df).dropna()
 
     # hist_cols = ['mean_flux', 'yest_flux', 'last_week_flux']
 #     for col in hist_cols:
@@ -123,4 +124,4 @@ def new_features(df):
     # features_to_clear = ['bikes_out', 'bikes_in','rebal_net_flux',
         # 'tot_docks', 'avail_bikes', 'avail_docks', 'flux']
 
-    return df_with_lags
+    return df

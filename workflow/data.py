@@ -4,6 +4,7 @@ import pandas as pd
 import os
 import pdb
 import numpy as np
+from datetime import date
 
 def get_data(name, url):
     """ Download and cache Citibike data
@@ -109,11 +110,7 @@ def station_data(year, month):
                      delimiter = '\t', error_bad_lines = False)
 
     # convert columns to numeric datatypes
-    #cols = ['dock_id', 'avail_bikes', 'avail_docks', '_lat', '_long']
     df[cols[:5]] = df[cols[:5]].apply(pd.to_numeric, errors='coerce')
-    #df = df.iloc[:,:13]
-    # df = df.dropna()
-    # pdb.set_trace
 
     # get rid of strange outliers
     df = df[df._lat > 40.6]

@@ -6,60 +6,51 @@
 
 <!--  CONTAINER  -->
 <div class="container">
-<div class="starter-template">
-  <h2>Station Input</h2>
-  <p>Select a station</p>
-</div>
+  <div class="starter-template">
+    <h3>Please select a station</h3>
+  </div>
 
-<form class="form-inline" method="POST" action="{{ url_for('output') }}">
-  <div class="form-group">
-    <div class="input-group">
-      <span class="input-group-addon">Please select station</span>
-      <select type='text' name="station-select" class="selectpicker form-control">
+  <form class="form-inline" method="POST" action="{{ url_for('output') }}">
+    <center>
+      <div class="form-group">
+        <div class="input-group">
+          <span class="input-group-addon">Station</span>
+          <select type='text' name="station-select" class="selectpicker form-control">atom
                 {% for _, x in station_df.iterrows() %}
                 <option value="{{ x.id }}">{{ x['neighborhood'] }} | {{ x['name'] }}</option>
                 {% endfor %}
               </select>
-    </div>
-    <button type="submit" class="btn btn-default">Go</button>
-  </div>
-</form>
+        </div>
+        <button type="submit" class="btn btn-default">Go</button>
+      </div>
+    </center>
+  </form>
 </div>
 
-
-
 <!-- New Container -->
-    <div class="container">
-     <div class="starter-template">
-       <h2>Results:</h2>
-       <p class="lead">You are looking at the average number of bikes that leave the station at a given hour
-       </p>
-     </div>
-
-     <!-- output table -->
-     <table class="table table-hover">
-     <tr><th>Hour</th><th>Bikes Out</th><th>Bikes In</th></tr>
-
-     {% for _, row in results.iterrows() %}
-     <tr><td>{{ row['hour']}}</td>
-        <td> {{ row['bikes_out'] }}</td>
-        <td> {{ row['bikes_in'] }}</td></tr>
-     {% endfor %}
-
-     </table>
+<div class="container">
+  <div class="starter-template">
+    <h3>Results: {{ st_info[0] }} </h3>
+    <center>
+      {% include "station_map.html" %} {{ plot | safe }}
+    </center>
+    <p>You are looking at the average number of bikes as a fraction of total available docks that enter <b>{{ st_info[0] }}</b> in <b>{{ st_info[1] }}</b>, <b>{{ st_info[2] }}</b> at a given time of day.
+    </p>
+  </div>
 
 
-   </div><!-- /.container -->
 
-   <div class="container">
-     <div class="starter-template">
-       <!-- <h3>Another Result:</h3>
+
+</div>
+<!-- /.container -->
+
+<div class="container">
+  <div class="starter-template">
+    <!-- <h3>Another Result:</h3>
        <p class="lead">Now we've taken the input and called a function from your package.<br>The result is {{the_result}}</p> -->
-     </div>
+  </div>
 
-     <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
-     <script src="static/js/bootstrap.min.js"></script>
-
-   </div> <!-- /.container-->
+</div>
+<!-- /.container-->
 
 {% endblock %}
