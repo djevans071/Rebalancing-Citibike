@@ -9,6 +9,9 @@ from pandas.io.json import json_normalize
 from datetime import datetime
 import holidays
 import pickle
+import pytz
+
+est = pytz.timezone('US/Eastern')
 
 def get_live_temp():
     # scrape live weather data site to get current temperature
@@ -41,7 +44,7 @@ def gather_params(station_number):
     temp = get_live_temp()
     # get live station data
     now_station = get_live_station_data(station_number)
-    now = datetime.now()
+    now = datetime.now(est)
 
     # cols = ['id', 'long', 'lat', 'hour', 'dayofweek',
             #  'month', 'is_weekday', 'is_holiday',

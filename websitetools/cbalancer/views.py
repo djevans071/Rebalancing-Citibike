@@ -19,7 +19,10 @@ from bokeh.models import FuncTickFormatter, HoverTool
 
 import folium
 from datetime import datetime
-import pdb
+import pytz
+
+# use US/Eastern timezone
+est = pytz.timezone('US/Eastern')
 
 username = 'psam071'
 host = 'localhost'
@@ -122,7 +125,7 @@ def ticker():
 
 def plotter(df, station_name):
     # plot fluxes
-    now = datetime.now().hour
+    now = datetime.now(est).hour
 
     p1 = figure(plot_width=650, plot_height=400, x_axis_type='datetime')
     p1.title.text = "Hourly Flows for Station"
@@ -177,7 +180,7 @@ def output():
     now_station = get_live_station_data(station_number)
 
     temp = get_live_temp()
-    now = datetime.now()
+    now = datetime.now(est)
     # get data for chosen station
     df = fetch_query(station_number)
     df = new_features(df)
@@ -195,10 +198,6 @@ def output():
     else:
         station_rec = 'Station Offline'
 
-
-
-
-
     return render_template("output.html",
         time = now.time().strftime('%I %p'),
         now_temp = temp,
@@ -207,3 +206,11 @@ def output():
         station_df = stations_info,
         hourly_table = df,
         plot = flux_plot)#, the_result = the_result)
+
+@app.route('/about')
+def about():
+    print 4
+
+@app.route('/contact')
+def contact():
+    print 5
