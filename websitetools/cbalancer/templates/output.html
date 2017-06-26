@@ -34,7 +34,7 @@
     <center>
       {% include "station_map.html" %} {{ plot | safe }}
     </center>
-    <p>You are looking at the average number of bikes as a fraction of total available docks that enter <b>{{ st_info[0] }}</b> in <b>{{ st_info[1] }}</b>, <b>{{ st_info[2] }}</b> at a given time of day.
+    <p class='lead'>You are looking at the average number of bikes as a fraction of total available docks that enter <b>{{ st_info[0] }}</b> in <b>{{ st_info[1] }}</b>, <b>{{ st_info[2] }}</b> at a given time of day.
     </p>
   </div>
 
@@ -46,8 +46,19 @@
 
 <div class="container">
   <div class="starter-template">
-    <!-- <h3>Another Result:</h3>
-       <p class="lead">Now we've taken the input and called a function from your package.<br>The result is {{the_result}}</p> -->
+    <h3>Rebalancing Recommendation:</h3>
+       <p class="lead">For this station at {{time}}, with temperature {{now_temp}}F, <br>
+      {% if rec == 'Station Offline' %}
+        <strong>rec</strong>
+      {% elif (rec < 0.2) and (rec > -0.2) %}
+        <span style="color:blue;font-weight:bold">No Rebalancing Necessary</span>
+      {% elif rec >= 0.2 %}
+         <span style="color:red;font-weight:bold">Remove Bikes</span>
+      {% elif rec <= -0.2 %}
+         <span style="color:green;font-weight:bold">Add Bikes</span>
+      {% endif %}
+       </p>
+
   </div>
 
 </div>

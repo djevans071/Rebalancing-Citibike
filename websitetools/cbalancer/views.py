@@ -1,5 +1,8 @@
-from flask import render_template, request
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+
 from cbalancer import app
+from flask import render_template, request
 
 from datetime import datetime
 from sqlalchemy import create_engine
@@ -15,10 +18,8 @@ from bokeh.embed import file_html
 from bokeh.models import FuncTickFormatter, HoverTool
 
 import folium
-from bs4 import BeautifulSoup
-from urllib2 import Request, urlopen
-import json
-from pandas.io.json import json_normalize
+from datetime import datetime
+import pdb
 
 username = 'psam071'
 host = 'localhost'
@@ -28,6 +29,8 @@ db = create_engine('postgres://%s%s/%s' % (username,host,dbname))
 con = None
 
 con = psycopg2.connect(database = dbname, user = username, host = host)
+reg = load_regressor()
+
 
 # SQL query to get all bike info for 2016
 def fetch_query(number):
@@ -111,31 +114,7 @@ def input():
 
 # ---------------- OUTPUT PAGE --------------------------
 
-def get_live_temp():
-    # scrape live weather data site to get current temperature
-    url = 'http://w1.weather.gov/data/obhistory/KNYC.html'
-    page = urlopen(url).read()
-    soup = BeautifulSoup(page, 'lxml')
 
-    live_temp = 0
-    for tr in soup.find_all('tr')[7:8]:
-        tds = tr.find_all('td')
-        live_temp += float(tds[6].text)
-    return live_temp
-
-def get_live_station_data(dock_id):
-    # returns live station data from citibike json feed
-    url = 'https://feeds.citibikenyc.com/stations/stations.json'
-    df = pd.read_json(url)
-    request = Request(url)
-    response = urlopen(request)
-    elevations = response.read()
-    data = json.loads(elevations)
-    df = json_normalize(data['stationBeanList'])
-
-    features = ['id', 'lastCommunicationTime', 'totalDocks',
-                'latitude', 'longitude', 'stationName', 'availableBikes', 'availableDocks', 'statusKey', 'statusValue']
-    return df[df.id == dock_id][features]
 
 def ticker():
     labels = {0:'12 AM', 5:'5 AM', 10:'10 AM', 15:'3 PM', 20:'8 PM'}
@@ -143,11 +122,14 @@ def ticker():
 
 def plotter(df, station_name):
     # plot fluxes
+    now = datetime.now().hour
+
     p1 = figure(plot_width=650, plot_height=400, x_axis_type='datetime')
     p1.title.text = "Hourly Flows for Station"
     p1.line(df['hour'], df['pct_flux'], line_width=4)
     # p1.line(df['hour'], df['pct_avail_bikes'], line_width = 3, color = 'firebrick')
-    # p1.patch([1, 2, 3, 4, 5], [.6, .7, .8, .7, .3], alpha=0.5, line_width=2)
+    p1.quad(top = 0.2, bottom=-0.2, left = now, right = now+1,
+            alpha=0.5, line_width=0, color = 'red')
     p1.ray(x=0, y=0.2, length=24, angle=0, color='black', line_dash = 'dashed')
     p1.ray(x=0, y=-0.2, length=24, angle=0, color='black', line_dash = 'dashed')
     p1.xaxis.axis_label = "Time of Day"
@@ -191,29 +173,36 @@ def output():
                    popup = station_loc[0]).add_to(station_map)
     station_map.save('cbalancer/templates/station_map.html')
 
-    # get live temperature data
-    temp = get_live_temp()
-
-    # get live station data
+    # get current station data from citibike json feed
     now_station = get_live_station_data(station_number)
-    # if now_station.statusKey == 3:
-    print temp
-    print now_station
 
-
-
-
-    # get data for
+    temp = get_live_temp()
+    now = datetime.now()
+    # get data for chosen station
     df = fetch_query(station_number)
     df = new_features(df)
-    df = flux_by_hour(df, ['pct_flux','hour'], stations_info, day = 1)
+    df = flux_by_hour(df, ['pct_flux','hour'], stations_info, day = now.weekday())
 
     # make flux plot
     flux_plot = plotter(df, station_name)
 
-    return render_template("output.html",
-        now_temp = temp,
 
+    # make recommendation
+    station_rec = 0
+    # pdb.set_trace()
+    if (now_station.statusKey.any() == 1):
+        station_rec = apply_model(station_number, reg)[0]
+    else:
+        station_rec = 'Station Offline'
+
+
+
+
+
+    return render_template("output.html",
+        time = now.time().strftime('%I %p'),
+        now_temp = temp,
+        rec = station_rec,
         st_info = station_name,
         station_df = stations_info,
         hourly_table = df,
