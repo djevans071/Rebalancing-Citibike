@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 
 {% extends "base.html" %}
-{% block title %}Station Output{% endblock %}
+{% block title %}Bike Flow | Station Output{% endblock %}
 {% block body %}
 
 <!--  CONTAINER  -->
 <div class="container">
   <div class="starter-template">
-    <h3>Please select a station</h3>
+    <h2>Please select a station</h2>
   </div>
 
   <form class="form-inline" method="POST" action="{{ url_for('output') }}">
@@ -15,7 +15,7 @@
       <div class="form-group">
         <div class="input-group">
           <span class="input-group-addon">Station</span>
-          <select type='text' name="station-select" class="selectpicker form-control">atom
+          <select type='text' name="station-select" class="selectpicker form-control">
                 {% for _, x in station_df.iterrows() %}
                 <option value="{{ x.id }}">{{ x['neighborhood'] }} | {{ x['name'] }}</option>
                 {% endfor %}
@@ -27,34 +27,69 @@
   </form>
 </div>
 
+
+<br><br>
+
+
+
 <!-- New Container -->
 <div class="container">
-  <div class="starter-template">
-    <h3>Results: {{ st_info[0] }} </h3>
-    <center>
-      {% include "station_map.html" %} {{ plot | safe }}
-    </center>
-    <p class='lead'>You are looking at the average number of bikes as a fraction of total available docks that enter <b>{{ st_info[0] }}</b> in <b>{{ st_info[1] }}</b>, <b>{{ st_info[2] }}</b> at a given time of day.
-    </p>
+  <div class="jumbotron-narrow">
+    <h2>Results: </h2>
+
+
+    <div class="col-sm-6 col-md-6">
+      <div class="chart-wrapper">
+        <div class="chart-title">
+          Hourly Flows for Station: <b>{{ st_info[0] }}</b> | <b>{{ st_info[1] }}</b>
+        </div>
+        <div class="chart-stage">
+          <div id="grid-1-1">
+            {{ plot | safe }}
+          </div>
+        </div>
+        <div class="chart-notes">
+          You are looking at the average number of bikes as a fraction of total available docks that enter this station on . The red bar indicates the current hour.
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-md-6">
+      <div class="chart-wrapper">
+        <div class="chart-title">
+          Map of {{ st_info[0] }}
+        </div>
+        <div class="chart-stage">
+          <div id="grid-1-2">
+            {% include "station_map.html" %}
+          </div>
+        </div>
+        <div class="chart-notes">
+          Current Availability: <b>{{ bike_avail['availableBikes'].iloc[0] }}</b> bikes,  <b>{{ bike_avail['availableDocks'].iloc[0] }}</b> empty docks
+
+          <br>out of <b>{{ bike_avail['totalDocks'].iloc[0] }}</b> total docks
+        </div>
+      </div>
+    </div>
+
   </div>
-
-
-
-
 </div>
+
+<br><br>
+
 <!-- /.container -->
 
 <div class="container">
   <div class="starter-template">
-    <h3>Rebalancing Recommendation:</h3>
-       <p class="lead">For this station at {{time}}, with temperature {{now_temp}}F, <br>
-      {% if rec == 'Station Offline' %}
-        <strong>rec</strong>
-      {% elif (rec < 0.2) and (rec > -0.2) %}
+    <h2>Rebalancing Recommendation:</h2>
+       <p class="lead">For this station at {{time}} (temperature: {{now_temp}}F), the flow is {{rec}}. <br>
+      {% if rec == 'Station Offline' or rec == 'Prediction Failed' %}
+        <strong>{{rec}}</strong>
+      {% elif (rec < 0.15) and (rec > -0.15) %}
         <span style="color:blue;font-weight:bold">No Rebalancing Necessary</span>
-      {% elif rec >= 0.2 %}
+      {% elif rec >= 0.15 %}
          <span style="color:red;font-weight:bold">Remove Bikes</span>
-      {% elif rec <= -0.2 %}
+      {% elif rec <= -0.15 %}
          <span style="color:green;font-weight:bold">Add Bikes</span>
       {% endif %}
        </p>

@@ -127,8 +127,8 @@ def plotter(df, station_name):
     # plot fluxes
     now = datetime.now(est).hour
 
-    p1 = figure(plot_width=650, plot_height=400, x_axis_type='datetime')
-    p1.title.text = "Hourly Flows for Station"
+    p1 = figure(plot_width=450, plot_height=350, x_axis_type='datetime')
+    # p1.title.text = "Hourly Flows for Station"
     p1.line(df['hour'], df['pct_flux'], line_width=4)
     # p1.line(df['hour'], df['pct_avail_bikes'], line_width = 3, color = 'firebrick')
     p1.quad(top = 0.2, bottom=-0.2, left = now, right = now+1,
@@ -138,8 +138,8 @@ def plotter(df, station_name):
     p1.xaxis.axis_label = "Time of Day"
     p1.yaxis.axis_label = "Bikes In per Hour"
     p1.title.text_font_size = "15pt"
-    p1.xaxis.axis_label_text_font_size = "15pt"
-    p1.yaxis.axis_label_text_font_size = "15pt"
+    p1.xaxis.axis_label_text_font_size = "13pt"
+    p1.yaxis.axis_label_text_font_size = "13pt"
     p1.xaxis.major_label_text_font_size = "12pt"
     p1.yaxis.major_label_text_font_size = "12pt"
     # p1.yaxis.tick_label_text_font_size = "12pt"
@@ -155,8 +155,7 @@ def output():
     # pull 'station' from input field and store it
     station_number = request.form.get('station-select')
     station_number = float(station_number)
-    # print station_number
-
+    
     #just select the bike_out from the citibike database for the station that the user inputs
     stations_info = get_stations()
     station_name = stations_info[stations_info.id == station_number][['name', 'neighborhood', 'borough']].iloc[0]
@@ -167,7 +166,7 @@ def output():
     tileset = r'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
 
     station_map = folium.Map(location = station_loc[1:],
-        width = 500, height = 350,
+        width = 350, height = 350,
         tiles = tileset,
         attr = '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
         zoom_start = 15)
@@ -194,12 +193,16 @@ def output():
     station_rec = 0
     # pdb.set_trace()
     if (now_station.statusKey.any() == 1):
-        station_rec = apply_model(station_number, reg)[0]
+        try:
+            station_rec = round(apply_model(station_number, reg)[0],3)
+        except ValueError:
+            station_rec = 'Prediction Failed'
     else:
         station_rec = 'Station Offline'
 
     return render_template("output.html",
-        time = now.time().strftime('%I %p'),
+        time = now.time().strftime('%I %p').lstrip('0'),
+        bike_avail = now_station,
         now_temp = temp,
         rec = station_rec,
         st_info = station_name,
@@ -209,8 +212,8 @@ def output():
 
 @app.route('/about')
 def about():
-    print 4
+    return render_template('about.html')
 
 @app.route('/contact')
 def contact():
-    print 5
+    return render_template('contact.html')
