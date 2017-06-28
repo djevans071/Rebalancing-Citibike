@@ -4,24 +4,24 @@
 {% block title %}Bike Flow | Station Output{% endblock %}
 {% block body %}
 
-<!--  CONTAINER  -->
 <div class="container">
   <div class="starter-template">
     <h2>Please select a station</h2>
   </div>
 
-  <form class="form-inline" method="POST" action="{{ url_for('output') }}">
+  <form class="form-inline" method="GET" action="{{ url_for('output') }}">
     <center>
       <div class="form-group">
         <div class="input-group">
           <span class="input-group-addon">Station</span>
-          <select type='text' name="station-select" class="selectpicker form-control">
+          <select name="station-select" class="selectpicker form-control" onchange="this.form.submit()">
+                <option value="{{ station_df[station_df.id == selected_id].id }}" disabled selected></option>
                 {% for _, x in station_df.iterrows() %}
                 <option value="{{ x.id }}">{{ x['neighborhood'] }} | {{ x['name'] }}</option>
                 {% endfor %}
               </select>
         </div>
-        <button type="submit" class="btn btn-default">Go</button>
+        <!-- <button type="submit" class="btn btn-default">Go</button> -->
       </div>
     </center>
   </form>
@@ -38,7 +38,7 @@
     <h2>Results: </h2>
 
 
-    <div class="col-sm-6 col-md-6">
+    <div class="col-md-6">
       <div class="chart-wrapper">
         <div class="chart-title">
           Hourly Flows for Station: <b>{{ st_info[0] }}</b> | <b>{{ st_info[1] }}</b>
@@ -49,12 +49,12 @@
           </div>
         </div>
         <div class="chart-notes">
-          You are looking at the average number of bikes as a fraction of total available docks that enter this station on . The red bar indicates the current hour.
+          You are looking at the average number of bikes as a fraction of total available docks that enter this station on <b>{{ dayofweek }}s<b>. The red bar indicates the current hour.
         </div>
       </div>
     </div>
 
-    <div class="col-sm-6 col-md-6">
+    <div class="col-md-6">
       <div class="chart-wrapper">
         <div class="chart-title">
           Map of {{ st_info[0] }}

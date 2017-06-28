@@ -9,17 +9,17 @@
     <h2>Please select a station</h2>
   </div>
 
-<form class="form-inline" method="POST" action="{{ url_for('output') }}">
+<form class="form-inline" method="GET" action="{{ url_for('output') }}">
   <div class="form-group">
     <div class="input-group">
       <span class="input-group-addon">Station</span>
-      <select type='text' name="station-select" class="selectpicker form-control">
+      <select type='text' name="station-select" class="form-control" onchange="this.form.submit()">
                 {% for _, x in station_df.iterrows() %}
-                <option value="{{ x.id }}">{{ x['neighborhood'] }} | {{ x['name'] }}</option>
+                <option value="{{ x.id }}" selected="">{{ x['neighborhood'] }} | {{ x['name'] }}</option>
                 {% endfor %}
               </select>
     </div>
-    <button type="submit" class="btn btn-default">Go</button>
+    <!-- <button type="submit" class="btn btn-default">Go</button> -->
   </div>
 </form>
 </div>

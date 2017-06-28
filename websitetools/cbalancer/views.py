@@ -20,7 +20,7 @@ from bokeh.models import FuncTickFormatter, HoverTool
 import folium
 from datetime import datetime
 import pytz
-
+import pdb
 # use US/Eastern timezone
 est = pytz.timezone('US/Eastern')
 
@@ -103,7 +103,7 @@ def index():
         # neighborhood_list = hood_list,
         name = user)
 
-# ------------- INPUT PAGE -------------------
+# ------------- INPUT PAGE -------------------station_number = request.args.get('station-select')
 
 @app.route('/')
 @app.route('/input', methods = ['GET', 'POST'])
@@ -153,9 +153,10 @@ def plotter(df, station_name):
 @app.route('/output', methods = ['GET', 'POST'])
 def output():
     # pull 'station' from input field and store it
-    station_number = request.form.get('station-select')
+    station_number = request.args.get('station-select')
+    # pdb.set_trace()
     station_number = float(station_number)
-    
+
     #just select the bike_out from the citibike database for the station that the user inputs
     stations_info = get_stations()
     station_name = stations_info[stations_info.id == station_number][['name', 'neighborhood', 'borough']].iloc[0]
@@ -192,22 +193,27 @@ def output():
     # make recommendation
     station_rec = 0
     # pdb.set_trace()
-    if (now_station.statusKey.any() == 1):
+    if (now_station.statusKey.iloc[0] == 3):
+        station_rec = 'Station Offline'
+    else:
         try:
             station_rec = round(apply_model(station_number, reg)[0],3)
         except ValueError:
             station_rec = 'Prediction Failed'
-    else:
-        station_rec = 'Station Offline'
+
+    days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
+            'Saturday', 'Sunday']
 
     return render_template("output.html",
         time = now.time().strftime('%I %p').lstrip('0'),
+        dayofweek = days[now.weekday()],
         bike_avail = now_station,
         now_temp = temp,
         rec = station_rec,
         st_info = station_name,
         station_df = stations_info,
         hourly_table = df,
+        selected_id = station_number,
         plot = flux_plot)#, the_result = the_result)
 
 @app.route('/about')
