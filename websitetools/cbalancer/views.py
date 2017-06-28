@@ -83,13 +83,9 @@ def new_features(df):
     return df
 
 # get hourly profile dataframe for any bike for any day
-def flux_by_hour(df, cols, dock_id, day = 0, weekday = None):
-    if weekday == 1 or weekday == 0:
-        grps = df.groupby(['id','is_weekday', 'hour']).mean().reset_index()
-        cond = (grps.is_weekday == weekday)
-    else:
-        grps = df.groupby(['id','dayofweek', 'hour']).mean().reset_index()
-        cond = (grps.dayofweek == day)
+def flux_by_hour(df, cols, dock_id, day = 0, month = 1):
+    grps = df.groupby(['id','month','dayofweek', 'hour']).mean().reset_index()
+    cond = (grps.dayofweek == day) & (grps.month == month)
     return grps[cond][cols]
 
 # --------------- HOME PAGE ---------------------
@@ -120,21 +116,27 @@ def input():
 
 
 def ticker():
-    labels = {0:'12 AM', 5:'5 AM', 10:'10 AM', 15:'3 PM', 20:'8 PM'}
+    labels = {0:'12 AM', 5:'5 AM', 10:'10 AM',
+                15:'3 PM', 20:'8 PM', 24:'12 AM'}
     return labels[tick]
 
 def plotter(df, station_name):
     # plot fluxes
     now = datetime.now(est).hour
+    fluxes = df.pct_flux
+    error_plus = fluxes.mean() + fluxes.std()
+    error_minus = fluxes.mean() - fluxes.std()
 
     p1 = figure(plot_width=450, plot_height=350, x_axis_type='datetime')
     # p1.title.text = "Hourly Flows for Station"
     p1.line(df['hour'], df['pct_flux'], line_width=4)
     # p1.line(df['hour'], df['pct_avail_bikes'], line_width = 3, color = 'firebrick')
-    p1.quad(top = 0.2, bottom=-0.2, left = now, right = now+1,
+    p1.quad(top = error_plus, bottom=error_minus, left = now, right = now+1,
             alpha=0.5, line_width=0, color = 'red')
-    p1.ray(x=0, y=0.2, length=24, angle=0, color='black', line_dash = 'dashed')
-    p1.ray(x=0, y=-0.2, length=24, angle=0, color='black', line_dash = 'dashed')
+    p1.ray(x=0, y=error_plus, length=24, angle=0,
+            color='black', line_dash = 'dashed')
+    p1.ray(x=0, y=error_minus, length=24, angle=0,
+            color='black', line_dash = 'dashed')
     p1.xaxis.axis_label = "Time of Day"
     p1.yaxis.axis_label = "Bikes In per Hour"
     p1.title.text_font_size = "15pt"
@@ -184,7 +186,10 @@ def output():
     # get data for chosen station
     df = fetch_query(station_number)
     df = new_features(df)
-    df = flux_by_hour(df, ['pct_flux','hour'], stations_info, day = now.weekday())
+    df = flux_by_hour(df, ['pct_flux','hour'], stations_info, day = now.weekday(), month = now.month)
+    fluxes = df.pct_flux
+    error_plus = fluxes.mean() + fluxes.std()
+    error_minus = fluxes.mean() - fluxes.std()
 
     # make flux plot
     flux_plot = plotter(df, station_name)
@@ -214,7 +219,8 @@ def output():
         station_df = stations_info,
         hourly_table = df,
         selected_id = station_number,
-        plot = flux_plot)#, the_result = the_result)
+        plot = flux_plot,
+        error_plus = error_plus, error_minus = error_minus)
 
 @app.route('/about')
 def about():

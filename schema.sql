@@ -40,33 +40,27 @@ CREATE TABLE weather (
 alter table weather owner to psam071;
 
 
-SELECT a.id, abs(a.bikes_in - a.bikes_out) as flux,
-         abs(a.rbikes_in - a.rbikes_out) as rflux,
-         a.bikes_in, a.bikes_out,                                 
-    c.name, neighborhood, borough, long, lat
-FROM   (SELECT id, sum(bikes_out) as bikes_out, sum(bikes_in) as bikes_in,
-        sum(rbikes_in) as rbikes_in, sum(rbikes_out) as rbikes_out
-    FROM features
-    GROUP BY id) a
-JOIN neighborhoods b ON a.id = b.id
-JOIN stations c on b.id = c.id
-ORDER BY rflux DESC
-LIMIT 100;
-
-
-
+-- create subset of features called features_subset
 SELECT a.id, a.date, a.hour, a.bikes_out, a.bikes_in, dayofweek, month, is_weekday, is_holiday, tot_docks, avail_bikes, avail_docks
 INTO features_subset FROM features a
 RIGHT JOIN unbal_stations b ON a.id = b.id;
 
 
-SELECT id
-FROM   (SELECT id, sum(bikes_out) as bikes_out, sum(bikes_in) as bikes_in,
+--make unbal_stations table
+SELECT a.id, abs(a.bikes_in - a.bikes_out) as flux,
+         abs(a.rbikes_in - a.rbikes_out) as rflux,
+         a.bikes_in, a.bikes_out,                                 
+    c.name, neighborhood, borough, long, lat
+INTO unbal_stations
+FROM   (SELECT id, 
+        min(date) as date, 
+        sum(bikes_out) as bikes_out, sum(bikes_in) as bikes_in,
         sum(rbikes_in) as rbikes_in, sum(rbikes_out) as rbikes_out
     FROM features
     GROUP BY id) a
 JOIN neighborhoods b ON a.id = b.id
 JOIN stations c on b.id = c.id
+WHERE date = '2015-03-01'
 ORDER BY rflux DESC
 LIMIT 100;
 

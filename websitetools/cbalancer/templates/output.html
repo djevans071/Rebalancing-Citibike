@@ -49,7 +49,7 @@
           </div>
         </div>
         <div class="chart-notes">
-          You are looking at the average number of bikes as a fraction of total available docks that enter this station on <b>{{ dayofweek }}s<b>. The red bar indicates the current hour.
+          You are looking at the average number of bikes as a fraction of total available docks that enter this station on <b>{{ dayofweek }}s</b>. If the value is positive, bikes are <b>entering</b> the station. If it's negative, bikes are <b>leaving</b> the station. The red bar indicates the current hour.
         </div>
       </div>
     </div>
@@ -66,7 +66,6 @@
         </div>
         <div class="chart-notes">
           Current Availability: <b>{{ bike_avail['availableBikes'].iloc[0] }}</b> bikes,  <b>{{ bike_avail['availableDocks'].iloc[0] }}</b> empty docks
-
           <br>out of <b>{{ bike_avail['totalDocks'].iloc[0] }}</b> total docks
         </div>
       </div>
@@ -82,14 +81,14 @@
 <div class="container">
   <div class="starter-template">
     <h2>Rebalancing Recommendation:</h2>
-       <p class="lead">For this station at {{time}} (temperature: {{now_temp}}F), the flow is {{rec}}. <br>
+       <p class="lead">For this station at <b>{{time}}</b> (temperature: {{now_temp}} &deg;F): <br>
       {% if rec == 'Station Offline' or rec == 'Prediction Failed' %}
         <strong>{{rec}}</strong>
-      {% elif (rec < 0.15) and (rec > -0.15) %}
+      {% elif (rec < error_plus) and (rec > error_minus) %}
         <span style="color:blue;font-weight:bold">No Rebalancing Necessary</span>
-      {% elif rec >= 0.15 %}
+      {% elif rec >= error_plus %}
          <span style="color:red;font-weight:bold">Remove Bikes</span>
-      {% elif rec <= -0.15 %}
+      {% elif rec <= error_minus %}
          <span style="color:green;font-weight:bold">Add Bikes</span>
       {% endif %}
        </p>
