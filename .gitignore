@@ -101,4 +101,3 @@ ENV/
 .mypy_cache/
 
 # other files
-/websitetools/cbalancer/templates/station_map.html

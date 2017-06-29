@@ -128,15 +128,15 @@ def plotter(df, station_name):
     error_minus = fluxes.mean() - fluxes.std()
 
     p1 = figure(plot_width=450, plot_height=350, x_axis_type='datetime')
-    # p1.title.text = "Hourly Flows for Station"
-    p1.line(df['hour'], df['pct_flux'], line_width=4)
-    # p1.line(df['hour'], df['pct_avail_bikes'], line_width = 3, color = 'firebrick')
     p1.quad(top = error_plus, bottom=error_minus, left = now, right = now+1,
             alpha=0.5, line_width=0, color = 'red')
+    p1.ray(x=0, y=0, length=24, angle=0,
+            color='black')
     p1.ray(x=0, y=error_plus, length=24, angle=0,
             color='black', line_dash = 'dashed')
     p1.ray(x=0, y=error_minus, length=24, angle=0,
             color='black', line_dash = 'dashed')
+    p1.line(df['hour'], df['pct_flux'], line_width=4)
     p1.xaxis.axis_label = "Time of Day"
     p1.yaxis.axis_label = "Bikes In per Hour"
     p1.title.text_font_size = "15pt"

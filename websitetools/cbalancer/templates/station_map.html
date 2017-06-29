@@ -19,7 +19,7 @@
     <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
     <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
     
-            <style> #map_81c18271cfd74f8e8c4c733361d54140 {
+            <style> #map_1d5dbc95584d49758d7097e358ddf9c0 {
                 position : relative;
                 width : 350.0px;
                 height: 350.0px;
@@ -31,7 +31,7 @@
 </head>
 <body>    
     
-            <div class="folium-map" id="map_81c18271cfd74f8e8c4c733361d54140" ></div>
+            <div class="folium-map" id="map_1d5dbc95584d49758d7097e358ddf9c0" ></div>
         
 </body>
 <script>    
@@ -43,9 +43,9 @@
                 var bounds = L.latLngBounds(southWest, northEast);
             
 
-            var map_81c18271cfd74f8e8c4c733361d54140 = L.map(
-                                  'map_81c18271cfd74f8e8c4c733361d54140',
-                                  {center: [40.7575699,-73.99098507],
+            var map_1d5dbc95584d49758d7097e358ddf9c0 = L.map(
+                                  'map_1d5dbc95584d49758d7097e358ddf9c0',
+                                  {center: [40.72362738,-73.99949601],
                                   zoom: 15,
                                   maxBounds: bounds,
                                   layers: [],
@@ -55,7 +55,7 @@
             
         
     
-            var tile_layer_785528daefe240228a1c5d604e0f89ec = L.tileLayer(
+            var tile_layer_ad0624a0b60a41d69a1b2b6e1bf4222e = L.tileLayer(
                 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
                 {
                     maxZoom: 18,
@@ -65,39 +65,39 @@
                     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
                     detectRetina: false
                     }
-                ).addTo(map_81c18271cfd74f8e8c4c733361d54140);
+                ).addTo(map_1d5dbc95584d49758d7097e358ddf9c0);
 
         
     
 
-            var marker_c19a4f5862424dfc950b0e9923f02bf7 = L.marker(
-                [40.7575699,-73.99098507],
+            var marker_c1ebf63caee74d38974702f49d40dbb9 = L.marker(
+                [40.72362738,-73.99949601],
                 {
                     icon: new L.Icon.Default()
                     }
                 )
-                .addTo(map_81c18271cfd74f8e8c4c733361d54140);
+                .addTo(map_1d5dbc95584d49758d7097e358ddf9c0);
             
     
 
-                var icon_51aae92257684a7daace7fbab07d459d = L.AwesomeMarkers.icon({
+                var icon_a0344c0f0d6a4f25b59730663372cb2c = L.AwesomeMarkers.icon({
                     icon: 'info-sign',
                     iconColor: 'white',
                     markerColor: 'red',
                     prefix: 'glyphicon',
                     extraClasses: 'fa-rotate-0'
                     });
-                marker_c19a4f5862424dfc950b0e9923f02bf7.setIcon(icon_51aae92257684a7daace7fbab07d459d);
+                marker_c1ebf63caee74d38974702f49d40dbb9.setIcon(icon_a0344c0f0d6a4f25b59730663372cb2c);
             
     
-            var popup_f59be99eafc34754ae06e64064b690db = L.popup({maxWidth: '300'});
+            var popup_337f82a92ef04af88ff7cbe29275538f = L.popup({maxWidth: '300'});
 
             
-                var html_719757c4542e40fbb20f275ec76da265 = $('<div id="html_719757c4542e40fbb20f275ec76da265" style="width: 100.0%; height: 100.0%;">W 42 St &amp; 8 Ave</div>')[0];
-                popup_f59be99eafc34754ae06e64064b690db.setContent(html_719757c4542e40fbb20f275ec76da265);
+                var html_8098b18e32b647ba82a5ec49de16dd21 = $('<div id="html_8098b18e32b647ba82a5ec49de16dd21" style="width: 100.0%; height: 100.0%;">Mercer St &amp; Spring St</div>')[0];
+                popup_337f82a92ef04af88ff7cbe29275538f.setContent(html_8098b18e32b647ba82a5ec49de16dd21);
             
 
-            marker_c19a4f5862424dfc950b0e9923f02bf7.bindPopup(popup_f59be99eafc34754ae06e64064b690db);
+            marker_c1ebf63caee74d38974702f49d40dbb9.bindPopup(popup_337f82a92ef04af88ff7cbe29275538f);
 
             
         
