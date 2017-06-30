@@ -101,3 +101,22 @@ ENV/
 .mypy_cache/
 
 # other files
+Untitled.ipynb
+add_to_sql_hoods.py
+cb_stations.ipynb
+dataset.pkl
+features_data/
+flaskex/
+hourly_weather.csv
+live_stations.py
+nyc_neighborhoods.csv
+pitch
+presentation_notes
+rebals/
+ridership.csv
+ridership.py
+stationdata/
+stations.csv
+tripdata/
+weather.csv
+
