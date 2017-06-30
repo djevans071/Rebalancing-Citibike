@@ -91,7 +91,7 @@ def flux_by_hour(df, cols, dock_id, day = 0, month = 1):
 # --------------- HOME PAGE ---------------------
 
 @app.route('/index')
-@app.route('/index.html')
+@app.route('/')
 def index():
     user = {'nickname': 'Dan'}
 
@@ -101,7 +101,7 @@ def index():
 
 # ------------- INPUT PAGE -------------------station_number = request.args.get('station-select')
 
-@app.route('/')
+# @app.route('/')
 @app.route('/input', methods = ['GET', 'POST'])
 def input():
 
