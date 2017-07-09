@@ -4,6 +4,18 @@
 {% block title %}BikeFlow | About{% endblock %}
 {% block body %}
 
+<div class="container">
+  <div class="header clearfix">
+    <nav>
+      <ul class="nav nav-pills pull-right">
+        <li role="presentation"><a href="{{url_for('index')}}">Home</a></li>
+        <li role="presentation" class="active"><a href="{{url_for('about')}}">About</a></li>
+        <li role="presentation"><a href="{{url_for('contact')}}">Contact</a></li>
+      </ul>
+    </nav>
+    <h3 class="text-muted">BikeFlow</h3>
+  </div>
+
 <iframe src="https://docs.google.com/presentation/d/1sySGKk8UgC1m-fXA2wlqaUlHDKbazdl1Q47pJhkDTRY/embed?start=false&loop=false&delayms=3000" frameborder="0" width="960" height="569" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
 
 {% endblock %}

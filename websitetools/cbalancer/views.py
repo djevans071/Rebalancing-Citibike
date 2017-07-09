@@ -124,8 +124,13 @@ def plotter(df, station_name):
     # plot fluxes
     now = datetime.now(est).hour
     fluxes = df.pct_flux
-    error_plus = fluxes.mean() + fluxes.std()
-    error_minus = fluxes.mean() - fluxes.std()
+
+    # calculate errors, but keep the minimum threshold 0.1
+    error = fluxes.std()
+    if error < 0.1:
+        error = 0.1
+    error_plus = fluxes.mean() + error
+    error_minus = fluxes.mean() - error
 
     p1 = figure(plot_width=450, plot_height=350, x_axis_type='datetime')
     p1.quad(top = error_plus, bottom=error_minus, left = now, right = now+1,
@@ -188,8 +193,11 @@ def output():
     df = new_features(df)
     df = flux_by_hour(df, ['pct_flux','hour'], stations_info, day = now.weekday(), month = now.month)
     fluxes = df.pct_flux
-    error_plus = fluxes.mean() + fluxes.std()
-    error_minus = fluxes.mean() - fluxes.std()
+    error = fluxes.std()
+    if error < 0.1:
+        error = 0.1
+    error_plus = fluxes.mean() + error
+    error_minus = fluxes.mean() - error
 
     # make flux plot
     flux_plot = plotter(df, station_name)

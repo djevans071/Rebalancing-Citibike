@@ -4,7 +4,7 @@
 
 Citibike is a fun and fast way of getting around the city, where users check out a bike at a station and return it within a 45 minute window. But if you're a commuter, there are times when it is difficult to find a station with bikes, or conversely, finding a station with available docks. So Citibike tries to solve this problem by rebalancing: manually moving bikes from full stations to empty ones.
 
-But figuring out a rebalancing strategy is a difficult problem, involving many different approaches and making many assumptions, including solving the traveling salesman network analysis problems using continuous time Markov chains. What I'm trying to do is use predict the traffic in and out of a given station to see if that station needs to be rebalanced during the day.
+But figuring out a rebalancing strategy is a difficult problem, involving many different approaches and making many assumptions, including solving the traveling salesman network analysis problems using continuous time Markov chains. What I'm trying to do is predict the traffic in and out of a given station to see if that station needs to be rebalanced during the day.
 
 ## Data
 ![](images/slide04.png)
@@ -23,7 +23,7 @@ If we zoom in on one station (W 42nd St & 8th Ave), we can see a similar pattern
 
 So why don't we just use bike availablity to make our predictions? Because bike availability by itself does not take into account the variabilty of station sizes and how quickly people check out and return bikes, which are the real indicators of bike demand. The flow is negative if bikes are leaving the station and positive if bikes are entering a station. (What we have essentially is a first derivative of bike availability)
 
-We can also see that at minimum flow, there there are still bikes leaving the station, giving us advance warning of when the station would be depleted. Similarly, we see a similar effect at the end of the day when we have peak flow back into the station.
+We can also see that at maximum negative flow, there there are still bikes leaving the station, giving us advance warning of when the station would be depleted. Similarly, we see a similar effect at the end of the day when we have peak flow back into the station.
 
 ## Thresholding for Rebalancing Recommendation
 ![](images/slide10.png)
@@ -42,4 +42,4 @@ Looking at the 2016 data for this station, we can see that the prediction for 20
 ## App
 ![](images/slide14.png)
 
-I have developed an app called [BikeFlow](http://www.cbalancer.site) that uses current station availability and weather data to make a prediction of the current flow based on the model. It shows a profile of the flow of the station based on historical data and the current hour displayed in red. It also shows a rebalancing recommendation based on the prediction. All code for the website are found in the `websitetools/` folder.
+I have developed web app called [BikeFlow](http://www.cbalancer.site) that uses current station availability and weather data to make a prediction of the current flow based on the model. It shows a profile of the flow of the station based on historical data and the current hour displayed in red. It also displays a rebalancing recommendation based on the prediction. All code for the website are found in the `websitetools/` folder.
