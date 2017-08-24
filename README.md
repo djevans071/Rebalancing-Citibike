@@ -33,7 +33,7 @@ But it would be better to find a window of times to suggest rebalancing. We do t
 ## Modeling
 ![](images/feature_importances.png)
 
-To make the prediction, I used a random forest regressor that takes into account the following features, the most important of which are time of day, station number, and the day of the week. I trained the model on 2015 data and tested it on 2016 data. The relevant code is found in `modeling.py`.
+To make the prediction, I employed a random forest regressor that takes into account the following features, the most important of which are time of day, station number, and the day of the week. I trained the model on 2015 data and tested it on 2016 data. The relevant code is found in `modeling.py`.
 
 ![](images/slide12.png)
 
@@ -42,4 +42,4 @@ Looking at the 2016 data for this station, we can see that the prediction for 20
 ## App
 ![](images/slide14.png)
 
-I have developed web app called [BikeFlow](http://www.cbalancer.site) that uses current station availability and weather data to make a prediction of the current flow based on the model. It shows a profile of the flow of the station based on historical data and the current hour displayed in red. It also displays a rebalancing recommendation based on the prediction. All code for the website is found in the `websitetools/` folder.
+I have developed a web app called [BikeFlow](http://www.cbalancer.site) that uses current station availability and weather data to make a prediction of the current flow based on the model. It shows a profile of the flow of the station based on historical data and the current hour displayed in red. It also displays a rebalancing recommendation based on the prediction. All code for the website is found in the `websitetools/` folder.
