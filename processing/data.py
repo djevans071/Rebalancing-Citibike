@@ -4,6 +4,11 @@ import pandas as pd
 import os
 import pdb
 import numpy as np
+from datetime import date
+
+"""
+Routines for extracting data from files
+"""
 
 def get_data(name, url):
     """ Download and cache Citibike data
@@ -26,9 +31,10 @@ def get_data(name, url):
         print '\t{} saved'.format(csv_path)
 
 
-# extract trip data from tripdata/ folder, specifying month and day
 def trip_data(year, month):
-    '''load trip data for a given year/month'''
+    '''
+    extract trip data from tripdata/ folder, specifying year and month
+    '''
     basepath = 'tripdata/'
     csvPath = '{}{:02}-citibike-tripdata.csv'.format(year, month)
     df = pd.read_csv(basepath + csvPath)
@@ -40,8 +46,7 @@ def trip_data(year, month):
     df.start_time = pd.to_datetime(df.start_time)
     df.stop_time = pd.to_datetime(df.stop_time)
 
-        # add a column called trip_id within
-    #df['trip_id'] = df.index.values
+    # add a column called trip_id within
     return df
 
 
@@ -109,11 +114,7 @@ def station_data(year, month):
                      delimiter = '\t', error_bad_lines = False)
 
     # convert columns to numeric datatypes
-    #cols = ['dock_id', 'avail_bikes', 'avail_docks', '_lat', '_long']
     df[cols[:5]] = df[cols[:5]].apply(pd.to_numeric, errors='coerce')
-    #df = df.iloc[:,:13]
-    # df = df.dropna()
-    # pdb.set_trace
 
     # get rid of strange outliers
     df = df[df._lat > 40.6]

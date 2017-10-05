@@ -6,9 +6,12 @@ Created on Wed Jun  7 16:19:11 2017
 @author: psamtik071
 """
 
-from workflow.data import trip_data
+from processing.data import trip_data
 import os
 
+"""
+A one-time script to create dataframes from the raw downloaded trips
+"""
 
 for year in xrange(2017,2018):
     for month in xrange(1,13):
@@ -35,4 +38,3 @@ for year in xrange(2017,2018):
             df.stop_time = pd.to_datetime(df.stop_time, format = '%Y-%m-%d %H:%M:%S')
 
             df.to_csv(to_filename,index = None)
-

@@ -21,6 +21,7 @@ import folium
 from datetime import datetime
 import pytz
 import pdb
+
 # use US/Eastern timezone
 est = pytz.timezone('US/Eastern')
 
@@ -44,8 +45,6 @@ def fetch_query(number):
         LEFT JOIN stations c ON a.id = c.id
         WHERE a.id = {}
             AND tot_docks > 0
-            --AND a.date > '2016-03-01'
-        --WHERE tot_docks > 0
         ORDER BY a.id, a.date, a.hour;
             """.format(number)
 
@@ -96,12 +95,10 @@ def index():
     user = {'nickname': 'Dan'}
 
     return render_template("index.html",
-        # neighborhood_list = hood_list,
         name = user)
 
-# ------------- INPUT PAGE -------------------station_number = request.args.get('station-select')
+# ------------- INPUT PAGE -----------------------
 
-# @app.route('/')
 @app.route('/input', methods = ['GET', 'POST'])
 def input():
 
@@ -112,8 +109,6 @@ def input():
         station_df = stations_info)
 
 # ---------------- OUTPUT PAGE --------------------------
-
-
 
 def ticker():
     labels = {0:'12 AM', 5:'5 AM', 10:'10 AM',
@@ -149,7 +144,6 @@ def plotter(df, station_name):
     p1.yaxis.axis_label_text_font_size = "13pt"
     p1.xaxis.major_label_text_font_size = "12pt"
     p1.yaxis.major_label_text_font_size = "12pt"
-    # p1.yaxis.tick_label_text_font_size = "12pt"
 
     # relabel x-ticks (check ticker function)
     p1.xaxis.formatter = FuncTickFormatter.from_py_func(ticker)
@@ -161,14 +155,12 @@ def plotter(df, station_name):
 def output():
     # pull 'station' from input field and store it
     station_number = request.args.get('station-select')
-    # pdb.set_trace()
     station_number = float(station_number)
 
     #just select the bike_out from the citibike database for the station that the user inputs
     stations_info = get_stations()
     station_name = stations_info[stations_info.id == station_number][['name', 'neighborhood', 'borough']].iloc[0]
     station_loc = list(stations_info[stations_info.id == station_number][['name', 'lat', 'long']].iloc[0])
-    # print station_name
 
     # make station map
     tileset = r'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
@@ -188,10 +180,12 @@ def output():
 
     temp = get_live_temp()
     now = datetime.now(est)
+
     # get data for chosen station
     df = fetch_query(station_number)
     df = new_features(df)
-    df = flux_by_hour(df, ['pct_flux','hour'], stations_info, day = now.weekday(), month = now.month)
+    df = flux_by_hour(df, ['pct_flux','hour'], stations_info,
+                            day=now.weekday(), month=now.month)
     fluxes = df.pct_flux
     error = fluxes.std()
     if error < 0.1:
@@ -202,10 +196,8 @@ def output():
     # make flux plot
     flux_plot = plotter(df, station_name)
 
-
     # make recommendation
     station_rec = 0
-    # pdb.set_trace()
     if (now_station.statusKey.iloc[0] == 3):
         station_rec = 'Station Offline'
     else:
